@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Target Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+  <!-- JOIN SCREEN -->
+  <div class="join-card" id="joinCard">
+    <div class="eyebrow">Summer School · Live Game</div>
+    <h1>Target Practice</h1>
+    <p class="sub">There's a hidden number. Move your slider, watch your score, climb the board. No peeking at the target — just hot or cold.</p>
+    <input type="text" id="nameInput" placeholder="Your name" maxlength="18" />
+    <button class="btn-primary" id="joinBtn">Join &amp; Play</button>
+    <button class="btn-ghost" id="watchBtn">Just watching (project this)</button>
+  </div>
+
+  <!-- GAME SCREEN -->
+  <div class="stage" id="stage">
+    <div class="topbar">
+      <div class="title display">🎯 Target Practice</div>
+      <div class="who" id="whoLine"></div>
+    </div>
+
+    <div class="grid">
+      <div class="panel" id="dialPanel">
+        <h2>Your Dial</h2>
+        <div class="readout">
+          <div class="score-num mono" id="scoreNum">0</div>
+          <div class="score-label">points</div>
+          <div class="temp-tag" id="tempTag">🥶 ICY</div>
+        </div>
+        <input type="range" id="slider" min="0" max="100" value="50" />
+        <div class="slider-ends"><span>0</span><span>100</span></div>
+      </div>
+
+      <div class="panel">
+        <h2>Live Leaderboard</h2>
+        <div id="board"><div class="empty-state">Waiting for players…</div></div>
+        <button class="btn-ghost" id="resetBtn" style="display:none; margin-top:16px;">🔄 New Round</button>
+      </div>
+    </div>
+    <div class="footer-hint">Scores update instantly for everyone — no need to refresh.</div>
+  </div>
+
+<script src="/static/game.js"></script>
+</body>
+</html>
