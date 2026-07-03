@@ -13,13 +13,15 @@ Then open http://localhost:8000
 """
 
 import json
+import os
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from game import game
+from .game import game
 
+os.chdir(".\\web-app")
 app = FastAPI()
 
 # Files in static/ (CSS, JS) are served exactly as they are on disk.
