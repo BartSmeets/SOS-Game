@@ -11,12 +11,14 @@ const board = document.getElementById('board');
 const whoLine = document.getElementById('whoLine');
 const resetBtn = document.getElementById('resetBtn');
 
-function connect(spectator, name) {
+function connect(name, spectator) {
   const proto = location.protocol === 'https:' ? 'wss' : 'ws';
   ws = new WebSocket(proto + '://' + location.host + '/ws');
+  
   ws.onopen = () => {
     ws.send(JSON.stringify({type: 'join', name: name, spectator: spectator}));
   };
+  
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
     if (msg.type === 'joined') {
@@ -68,11 +70,11 @@ function renderBoard(rows) {
 
 document.getElementById('joinBtn').onclick = () => {
   isSpectator = false;
-  connect(false, nameInput.value);
+  connect(nameInput.value, false);
 };
 document.getElementById('watchBtn').onclick = () => {
   isSpectator = true;
-  connect(true, 'Spectator');
+  connect('Spectator', true);
 };
 nameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') document.getElementById('joinBtn').click(); });
 

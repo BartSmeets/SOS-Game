@@ -21,7 +21,7 @@ from fastapi.templating import Jinja2Templates
 
 from .game import game
 
-os.chdir(".\\web-app")
+os.chdir(".\\web_app")
 app = FastAPI()
 
 # Files in static/ (CSS, JS) are served exactly as they are on disk.
@@ -74,11 +74,13 @@ async def ws_endpoint(websocket: WebSocket):
             msg = json.loads(raw)
             msg_type = msg.get("type")
 
+            # New Connection
             if msg_type == "join":
                 if msg.get("spectator"):
                     is_spectator = True
                     spectators.add(websocket)
-                    await websocket.send_text(json.dumps(scoreboard_payload()))
+                    await websocket.send_text(json.dumps({"type": "joined", "name": name}))
+                    await broadcast(scoreboard_payload())
                     continue
 
                 name = game.add_player(msg.get("name", ""))
