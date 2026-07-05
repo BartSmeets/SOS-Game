@@ -1,53 +1,125 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Target Practice</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Target Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
 
-  <!-- JOIN SCREEN -->
-  <div class="join-card" id="joinCard">
-    <div class="eyebrow">Summer School · Live Game</div>
-    <h1>Target Practice</h1>
-    <p class="sub">There's a hidden number. Move your slider, watch your score, climb the board. No peeking at the target — just hot or cold.</p>
-    <input type="text" id="nameInput" placeholder="Your name" maxlength="18" />
-    <button class="btn-primary" id="joinBtn">Join &amp; Play</button>
-    <button class="btn-ghost" id="watchBtn">Just watching (project this)</button>
-  </div>
+  <body>
+    <!-- JOIN SCREEN -->
+    <div class="join-card" id="joinCard">
+      <span class="eyebrow">Summer of Science · EXPTECH</span>
+      <h1>Einstein Coefficients</h1>
 
-  <!-- GAME SCREEN -->
-  <div class="stage" id="stage">
-    <div class="topbar">
-      <div class="title display">🎯 Target Practice</div>
-      <div class="who" id="whoLine"></div>
+      <p class="sub">
+        Discover how the A &amp B coefficients affect the laser gain — Can you
+        make a stable gain?
+      </p>
+      <input
+        type="text"
+        id="nameInput"
+        placeholder="Your name"
+        maxlength="18"
+      />
+      <button class="btn-primary" id="joinBtn">Join &amp; Play</button>
+      <button class="btn-ghost" id="watchBtn">Just watching</button>
     </div>
 
-    <div class="grid">
-      <div class="panel" id="dialPanel">
-        <h2>Your Dial</h2>
-        <div class="readout">
-          <div class="score-num mono" id="scoreNum">0</div>
-          <div class="score-label">points</div>
-          <div class="temp-tag" id="tempTag">🥶 ICY</div>
-        </div>
-        <input type="range" id="slider" min="0" max="100" value="50" />
-        <div class="slider-ends"><span>0</span><span>100</span></div>
+    <!-- GAME SCREEN -->
+    <div class="stage" id="stage">
+      <div class="topbar">
+        <span class="title">Einstein Coefficients</span>
+        <div class="who" id="whoLine"></div>
       </div>
 
-      <div class="panel">
-        <h2>Live Leaderboard</h2>
-        <div id="board"><div class="empty-state">Waiting for players…</div></div>
-        <button class="btn-ghost" id="resetBtn" style="display:none; margin-top:16px;">🔄 New Round</button>
+      <div class="grid">
+        <section class="panel" id="dialPanel">
+          <h2>Your Dial</h2>
+
+          <div class="readout">
+            <output class="score-num mono" id="scoreNum">0</output>
+            <span class="score-label">points</span>
+            <div class="temp-tag" id="tempTag">🥶 ICY</div>
+          </div>
+
+          <form class="settings">
+            <div>
+              <label for="n2-slider" class="observable-label">
+                <strong>N<sub>2</sub></strong
+                >: percentage of carriers in the highest energy level
+              </label>
+              <input
+                type="range"
+                id="n2-slider"
+                name="n2"
+                min="0"
+                max="100"
+                value="50"
+              />
+              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+            </div>
+
+            <div>
+              <label for="a-input" class="observable-label">
+                <strong>A</strong>: Spontaneous emission rate
+              </label>
+              <input
+                type="range"
+                id="a-input"
+                name="a"
+                min="0"
+                max="100"
+                value="50"
+              />
+              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+            </div>
+
+            <div>
+              <label for="bw-input" class="observable-label">
+                <strong>BW</strong>: Stimulated emission/Pump rate
+              </label>
+              <input
+                type="range"
+                id="bw-input"
+                name="bw"
+                min="0"
+                max="100"
+                value="50"
+              />
+              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+            </div>
+          </form>
+        </section>
+
+        <section class="panel">
+          <h2>Live Leaderboard</h2>
+
+          <div id="board">
+            <div class="empty-state">Waiting for players…</div>
+          </div>
+          <button
+            class="btn-ghost"
+            id="resetBtn"
+            style="display: none; margin-top: 16px"
+          >
+            🔄 New Round
+          </button>
+        </section>
       </div>
+
+      <span class="footer-hint">
+        Scores update instantly for everyone — no need to refresh.
+      </span>
     </div>
-    <div class="footer-hint">Scores update instantly for everyone — no need to refresh.</div>
-  </div>
 
-<script src="/static/game.js"></script>
-</body>
+    <script src="/static/game.js"></script>
+  </body>
 </html>

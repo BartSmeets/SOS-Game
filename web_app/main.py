@@ -13,7 +13,7 @@ Then open http://localhost:8000
 """
 
 import json
-import os
+from pathlib import Path
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
@@ -21,16 +21,16 @@ from fastapi.templating import Jinja2Templates
 
 from .game import game
 
-os.chdir(".\\web_app")
+BASE_DIR = Path(__file__).resolve().parent
 app = FastAPI()
 
 # Files in static/ (CSS, JS) are served exactly as they are on disk.
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 
 # HTML in templates/ is passed through Jinja2 before being sent to the browser
 # (we don't use any dynamic {{ values }} yet, but this is the standard place
 # for it if you add some later).
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 connections: dict[str, WebSocket] = {}   # player name -> websocket
 spectators: set[WebSocket] = set()       # websockets that are just watching
@@ -82,11 +82,11 @@ async def ws_endpoint(websocket: WebSocket):
                     await websocket.send_text(json.dumps({"type": "joined", "name": name}))
                     await broadcast(scoreboard_payload())
                     continue
-
-                name = game.add_player(msg.get("name", ""))
-                connections[name] = websocket
-                await websocket.send_text(json.dumps({"type": "joined", "name": name}))
-                await broadcast(scoreboard_payload())
+                else:
+                    name = game.add_player(msg.get("name", ""))
+                    connections[name] = websocket
+                    await websocket.send_text(json.dumps({"type": "joined", "name": name}))
+                    await broadcast(scoreboard_payload())
 
             elif msg_type == "slide" and name:
                 game.update_value(name, msg["value"])
