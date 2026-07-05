@@ -14,6 +14,7 @@ const dialPanel = document.getElementById("dialPanel");
 const n2Slider = document.getElementById("n2-slider");
 const aInput = document.getElementById("a-input");
 const bwInput = document.getElementById("bw-input");
+const submitBtn = document.getElementById;
 
 const board = document.getElementById("board");
 
@@ -40,8 +41,6 @@ function connect(name, spectator) {
       }
     } else if (msg.type === "scoreboard") {
       renderBoard(msg.board);
-    } else if (msg.type === "round_reset") {
-      slider.value = 50;
     }
   };
 }
@@ -98,8 +97,15 @@ nameInput.addEventListener("keydown", (e) => {
   }
 });
 
-slider.addEventListener("input", () => {
-  if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify({ type: "slide", value: slider.value }));
-  }
-});
+document.getElementById("submitBtn").onclick = () => {
+  ws.send(
+    JSON.stringify({
+      type: "submit",
+      values: {
+        n2: n2Slider.value,
+        a: aInput.value,
+        bw: bwInput.value,
+      },
+    }),
+  );
+};

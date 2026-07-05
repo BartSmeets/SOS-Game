@@ -9,6 +9,8 @@ touching any networking code.
 
 import random
 
+import numpy as np
+
 SLIDER_MIN, SLIDER_MAX = 0, 100  # CUSTOMISE ME: slider range
 
 
@@ -16,18 +18,7 @@ class Game:
     """Holds the hidden target and every player's current slider value/score."""
 
     def __init__(self):
-        self.target = self._new_target()
         self.players: dict[str, dict] = {}
-
-    def _new_target(self) -> int:
-        return random.randint(SLIDER_MIN + 10, SLIDER_MAX - 10)
-
-    def _score(self, value: int) -> float:
-        """Closer to the target = higher score. CUSTOMISE ME: change the
-        formula, or tie it to your own lesson content."""
-        distance = abs(value - self.target)
-        span = SLIDER_MAX - SLIDER_MIN
-        return max(0.0, round(100 - (distance / span) * 130, 1))
 
     def add_player(self, requested_name: str) -> str:
         """Registers a new player and returns the name actually assigned
@@ -38,29 +29,39 @@ class Game:
             name = f"{base} ({i})"
             i += 1
         start_value = (SLIDER_MIN + SLIDER_MAX) // 2
-        self.players[name] = {"value": start_value, "score": self._score(start_value)}
+        self.players[name] = {"value": start_value, "score": None}
         return name
 
     def remove_player(self, name: str) -> None:
         self.players.pop(name, None)
 
-    def update_value(self, name: str, value: int) -> None:
-        value = max(SLIDER_MIN, min(SLIDER_MAX, int(value)))
-        self.players[name]["value"] = value
-        self.players[name]["score"] = self._score(value)
+    def update_score(self, name: str, values: dict) -> None:
+        N = 1e3
+        # p = float(values["n2"])
+        a = float(values["a"])
+        bw = float(values["bw"])
+        
+        # def nt(t):
+        # analytic function for the population vector over time
+        #     c = N * (bw / (a + 2 * bw) - p)
+        #     V = np.array([1, -1])
+        #     exp = np.exp(- (a + 2 * bw)*t)
+        #     return c * V * exp
+        
+        denom = a + 2 * bw
+        if denom == 0:
+            gain = 0
+        else:
+            n1_final = N * (a + bw) / denom
+            n2_final = N * bw / denom
+            gain = bw * n2_final - bw * n1_final 
 
-    def reset_round(self) -> None:
-        """Picks a new hidden target and puts every slider back to the middle."""
-        self.target = self._new_target()
-        mid = (SLIDER_MIN + SLIDER_MAX) // 2
-        for p in self.players.values():
-            p["value"] = mid
-            p["score"] = self._score(mid)
-
+        self.players[name]["score"] = f"{gain:.1f}"
+        
     def scoreboard(self) -> list[dict]:
         """Returns players ranked highest score first."""
         ranked = sorted(self.players.items(), key=lambda kv: kv[1]["score"], reverse=True)
-        return [{"name": n, "value": p["value"], "score": p["score"]} for n, p in ranked]
+        return [{"name": n, "score": p["score"]} for n, p in ranked]
 
 
 # One shared game, used by every connected player.

@@ -88,13 +88,8 @@ async def ws_endpoint(websocket: WebSocket):
                     await websocket.send_text(json.dumps({"type": "joined", "name": name}))
                     await broadcast(scoreboard_payload())
 
-            elif msg_type == "slide" and name:
-                game.update_value(name, msg["value"])
-                await broadcast(scoreboard_payload())
-
-            elif msg_type == "reset":
-                game.reset_round()
-                await broadcast({"type": "round_reset"})
+            elif msg_type == "submit" and name:
+                game.update_score(name, msg["values"])
                 await broadcast(scoreboard_payload())
 
     except WebSocketDisconnect:
