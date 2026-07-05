@@ -3,16 +3,21 @@ let ws,
   isSpectator = false;
 
 const joinCard = document.getElementById("joinCard");
-const stage = document.getElementById("stage");
 const nameInput = document.getElementById("nameInput");
-const slider = document.getElementById("slider");
+
+const stage = document.getElementById("stage");
 const scoreNum = document.getElementById("scoreNum");
 const tempTag = document.getElementById("tempTag");
-const dialPanel = document.getElementById("dialPanel");
-const board = document.getElementById("board");
 const whoLine = document.getElementById("whoLine");
-const resetBtn = document.getElementById("resetBtn");
 
+const dialPanel = document.getElementById("dialPanel");
+const n2Slider = document.getElementById("n2-slider");
+const aInput = document.getElementById("a-input");
+const bwInput = document.getElementById("bw-input");
+
+const board = document.getElementById("board");
+
+// FUNCTIONS
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(proto + "://" + location.host + "/ws");
@@ -32,7 +37,6 @@ function connect(name, spectator) {
       stage.classList.add("active");
       if (isSpectator) {
         dialPanel.style.display = "none";
-        resetBtn.style.display = "inline-block";
       }
     } else if (msg.type === "scoreboard") {
       renderBoard(msg.board);
@@ -89,16 +93,13 @@ document.getElementById("watchBtn").onclick = () => {
   connect("Spectator", isSpectator);
 };
 nameInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") document.getElementById("joinBtn").click();
+  if (e.key === "Enter") {
+    document.getElementById("joinBtn").click();
+  }
 });
 
 slider.addEventListener("input", () => {
   if (ws && ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: "slide", value: slider.value }));
   }
-});
-
-resetBtn.addEventListener("click", () => {
-  if (ws && ws.readyState === WebSocket.OPEN)
-    ws.send(JSON.stringify({ type: "reset" }));
 });

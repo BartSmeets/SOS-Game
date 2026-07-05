@@ -41,6 +41,7 @@
       </div>
 
       <div class="grid">
+        <!-- DIAL PANEL -->
         <section class="panel" id="dialPanel">
           <h2>Your Dial</h2>
 
@@ -50,8 +51,9 @@
             <div class="temp-tag" id="tempTag">🥶 ICY</div>
           </div>
 
+          <!-- INPUTS -->
           <form class="settings">
-            <div>
+            <div class="setting">
               <label for="n2-slider" class="observable-label">
                 <strong>N<sub>2</sub></strong
                 >: percentage of carriers in the highest energy level
@@ -67,57 +69,31 @@
               <div class="slider-ends"><span>0%</span><span>100%</span></div>
             </div>
 
-            <div>
+            <div class="setting">
               <label for="a-input" class="observable-label">
                 <strong>A</strong>: Spontaneous emission rate
               </label>
-              <input
-                type="range"
-                id="a-input"
-                name="a"
-                min="0"
-                max="100"
-                value="50"
-              />
-              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+              <input type="number" id="a-input" name="a" min="0" value="0" />
             </div>
 
-            <div>
+            <div class="setting">
               <label for="bw-input" class="observable-label">
                 <strong>BW</strong>: Stimulated emission/Pump rate
               </label>
-              <input
-                type="range"
-                id="bw-input"
-                name="bw"
-                min="0"
-                max="100"
-                value="50"
-              />
-              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+              <input type="number" id="bw-input" name="bw" min="0" value="0" />
             </div>
           </form>
         </section>
 
+        <!-- LEADERBOARD -->
         <section class="panel">
           <h2>Live Leaderboard</h2>
 
           <div id="board">
             <div class="empty-state">Waiting for players…</div>
           </div>
-          <button
-            class="btn-ghost"
-            id="resetBtn"
-            style="display: none; margin-top: 16px"
-          >
-            🔄 New Round
-          </button>
         </section>
       </div>
-
-      <span class="footer-hint">
-        Scores update instantly for everyone — no need to refresh.
-      </span>
     </div>
 
     <script src="/static/game.js"></script>
