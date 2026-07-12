@@ -29,7 +29,7 @@ class Game:
             name = f"{base} ({i})"
             i += 1
         start_value = (SLIDER_MIN + SLIDER_MAX) // 2
-        self.players[name] = {"value": start_value, "score": None}
+        self.players[name] = {"value": start_value, "score": "0.0"}
         return name
 
     def remove_player(self, name: str) -> None:
@@ -60,7 +60,8 @@ class Game:
         
     def scoreboard(self) -> list[dict]:
         """Returns players ranked highest score first."""
-        ranked = sorted(self.players.items(), key=lambda kv: kv[1]["score"], reverse=True)
+        ranked = sorted(self.players.items(), key=lambda kv: float(kv[1]["score"]), reverse=True)
+        print(ranked)
         return [{"name": n, "score": p["score"]} for n, p in ranked]
 
 
