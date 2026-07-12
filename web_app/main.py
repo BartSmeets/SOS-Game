@@ -89,7 +89,7 @@ async def ws_endpoint(websocket: WebSocket):
                     await broadcast(scoreboard_payload())
 
             elif msg_type == "submit" and name:
-                game.update_score(name, msg["values"])
+                game.update_score(name, int(msg["score"]))
                 await broadcast(scoreboard_payload())
 
     except WebSocketDisconnect:

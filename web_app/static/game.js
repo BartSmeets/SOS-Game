@@ -1,42 +1,58 @@
-let ws,
-  myName = null,
-  isSpectator = false;
+// =========================================================================
+// Two-level electron system — multiplayer client
+//
+// Structure:
+//   1. DOM references
+//   2. WebSocket / networking
+//   3. Scoreboard rendering
+//   4. Canvas animation (electron decay simulation)
+// =========================================================================
+
+// -------------------------------------------------------------------------
+// 1. DOM references
+// -------------------------------------------------------------------------
+let ws;
+let myName = null;
+let isSpectator = false;
 
 const joinCard = document.getElementById("joinCard");
 const nameInput = document.getElementById("nameInput");
 
 const stage = document.getElementById("stage");
 const scoreNum = document.getElementById("scoreNum");
-console.log("init ran, scoreNum now:", JSON.stringify(scoreNum.textContent));
-console.log("scoreNum set to:", scoreNum.textContent);
 const whoLine = document.getElementById("whoLine");
 
 const dialPanel = document.getElementById("dialPanel");
 const n2Slider = document.getElementById("n2-slider");
 const aInput = document.getElementById("a-input");
 const bwInput = document.getElementById("bw-input");
-const submitBtn = document.getElementById;
+const submitBtn = document.getElementById("submitBtn");
 
 const board = document.getElementById("board");
 
-// FUNCTIONS
+// -------------------------------------------------------------------------
+// 2. WebSocket / networking
+// -------------------------------------------------------------------------
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(proto + "://" + location.host + "/ws");
 
   ws.onopen = () => {
-    ws.send(JSON.stringify({ type: "join", name: name, spectator: spectator }));
+    ws.send(JSON.stringify({ type: "join", name, spectator }));
   };
 
   ws.onmessage = (event) => {
     const msg = JSON.parse(event.data);
+
     if (msg.type === "joined") {
       myName = msg.name;
       whoLine.innerHTML = isSpectator
         ? "Spectator view"
-        : "Playing as <b>" + myName + "</b>";
+        : `Playing as <b>${myName}</b>`;
+
       joinCard.style.display = "none";
       stage.classList.add("active");
+
       if (isSpectator) {
         dialPanel.style.display = "none";
       }
@@ -46,11 +62,31 @@ function connect(name, spectator) {
   };
 }
 
+document.getElementById("joinBtn").onclick = () => {
+  isSpectator = false;
+  connect(nameInput.value, isSpectator);
+};
+
+document.getElementById("watchBtn").onclick = () => {
+  isSpectator = true;
+  connect("Spectator", isSpectator);
+};
+
+nameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    document.getElementById("joinBtn").click();
+  }
+});
+
+// -------------------------------------------------------------------------
+// 3. Scoreboard rendering
+// -------------------------------------------------------------------------
 function renderBoard(rows) {
   if (!rows.length) {
     board.innerHTML = '<div class="empty-state">Waiting for players…</div>';
     return;
   }
+
   board.innerHTML = rows
     .map((r, i) => {
       const mine = r.name === myName;
@@ -58,7 +94,9 @@ function renderBoard(rows) {
       <div class="rank">${i + 1}</div>
       <div>
         <div class="name">${r.name}${mine ? " (you)" : ""}</div>
-        <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100, r.score)}%"></div></div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${Math.min(100, ((rows.length - i) / rows.length) * 100)}%"></div>
+        </div>
       </div>
       <div class="score-pill">${r.score}</div>
     </div>`;
@@ -67,106 +105,69 @@ function renderBoard(rows) {
 
   if (!isSpectator) {
     const mine = rows.find((r) => r.name === myName);
-    if (mine) {
-      if (mine.score != null) {
-        scoreNum.textContent = mine.score;
-      }
+    if (mine && mine.score != null) {
+      scoreNum.textContent = mine.score;
     }
   }
 }
 
-document.getElementById("joinBtn").onclick = () => {
-  isSpectator = false;
-  connect(nameInput.value, isSpectator);
-};
-document.getElementById("watchBtn").onclick = () => {
-  isSpectator = true;
-  connect("Spectator", isSpectator);
-};
-nameInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    document.getElementById("joinBtn").click();
-  }
-});
-
+// -------------------------------------------------------------------------
+// 4. Canvas animation (electron decay simulation)
+// -------------------------------------------------------------------------
 (function () {
   const canvas = document.getElementById("scene");
   const ctx = canvas.getContext("2d");
-  const W = canvas.width,
-    H = canvas.height;
+  const W = canvas.width;
+  const H = canvas.height;
 
   const TOTAL = 100;
-  const Y_E2 = H * 0.1; // upper level y
-  const Y_E1 = H * 0.9; // lower level y
-  const LEVEL_X0 = 90,
-    LEVEL_X1 = W - 90;
+  const Y_E2 = H * 0.1; // upper energy level (excited state)
+  const Y_E1 = H * 0.9; // lower energy level (ground state)
+  const LEVEL_X0 = 90;
+  const LEVEL_X1 = W - 90;
 
+  // Decay-curve parameters, set on submit:
+  //   A   — spontaneous decay rate
+  //   BW  — stimulated/blackbody rate
+  //   C   = A + BW (total decay rate)
+  //   N0  — initial number of excited electrons
+  //   SS  — steady-state excited population
+  //   K   — offset constant for the exponential decay curve
   let A,
     BW = 0.0,
     N0,
     C,
     SS,
-    K;
+    K,
+    gain;
 
-  let animId = null;
   let running = false;
   let lastTime = null;
   let elapsed = 0;
   let electrons = [];
-  makeElectrons(n2Slider.value);
+  let nExcited = 0;
 
-  let nExcited = electrons.filter((e) => e.level === 2).length;
-
-  function makeElectrons(nExcited) {
+  function makeElectrons(nExcitedInit) {
     electrons = [];
     for (let i = 0; i < TOTAL; i++) {
-      const excited = i < nExcited;
+      const excited = i < nExcitedInit;
       electrons.push({
         id: i,
         level: excited ? 2 : 1,
         x: LEVEL_X0 + Math.random() * (LEVEL_X1 - LEVEL_X0),
         yJitter: (Math.random() - 0.5) * 10,
         bob: Math.random() * Math.PI * 2,
-        dropProgress: null, // set when transitioning
+        dropProgress: null, // non-null while transitioning from level 2 -> 1
       });
     }
+    nExcited = electrons.filter((e) => e.level === 2).length;
   }
 
   function easeInOut(x) {
     return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
   }
 
-  function step() {
-    const rate = BW + C;
-    // const rate = 0.1;
-    console.log("elapsed:", elapsed);
-    const exp = Math.exp(-rate * elapsed);
-    console.log("exp:", exp);
-    console.log("k:", K);
-    const roundedTerm = Math.round(-K * exp);
-    console.log("rounded term:", roundedTerm);
-    const nDecaying = N0 - (SS + roundedTerm);
-
-    electrons.forEach((e) => {
-      if (e.id <= nDecaying && e.level === 2 && e.dropProgress === null) {
-        e.dropProgress = 0;
-      }
-    });
-
-    electrons.forEach((e) => {
-      if (e.dropProgress !== null) {
-        e.dropProgress += 0.06;
-        if (e.dropProgress > 1.0) {
-          e.level = 1;
-          e.dropProgress = null;
-        }
-      }
-    });
-
-    nExcited = electrons.filter((e) => e.level === 2).length;
-    if (nExcited <= SS) running = false;
-  }
-
+  // Advances any electrons currently mid-transition down to the ground state.
   function advanceFalls() {
     electrons.forEach((e) => {
       if (e.dropProgress !== null) {
@@ -177,6 +178,37 @@ nameInput.addEventListener("keydown", (e) => {
         }
       }
     });
+  }
+
+  // Advances the simulation: computes how many electrons should have decayed
+  // by now (following an exponential approach to steady state) and starts
+  // new transitions accordingly.
+  function step() {
+    const rate = BW + C;
+    const decayFactor = Math.exp(-rate * elapsed);
+    const roundedTerm = -K * decayFactor;
+    const nDecaying = Math.ceil(N0 - (SS + roundedTerm));
+
+    electrons.forEach((e) => {
+      if (e.id <= nDecaying && e.level === 2 && e.dropProgress === null) {
+        e.dropProgress = 0;
+      }
+    });
+
+    advanceFalls();
+
+    nExcited = electrons.filter((e) => e.level === 2).length;
+    gain = (BW * nExcited - BW * (TOTAL - nExcited)).toFixed(0);
+    scoreNum.textContent = gain;
+
+    ws.send(
+      JSON.stringify({
+        type: "submit",
+        score: gain,
+      }),
+    );
+
+    if (nExcited <= SS) running = false;
   }
 
   function getCss(varName) {
@@ -196,6 +228,7 @@ nameInput.addEventListener("keydown", (e) => {
     ctx.moveTo(LEVEL_X0, y);
     ctx.lineTo(LEVEL_X1, y);
     ctx.stroke();
+
     ctx.fillStyle = color;
     ctx.font = "14px Georgia, serif";
     ctx.textAlign = "right";
@@ -225,6 +258,7 @@ nameInput.addEventListener("keydown", (e) => {
     ctx.lineTo(LEVEL_X1 + 30, Y_E1);
     ctx.stroke();
     ctx.setLineDash([]);
+
     ctx.fillStyle = getCss("--text-muted");
     ctx.font = "14px Georgia, serif";
     ctx.save();
@@ -234,7 +268,6 @@ nameInput.addEventListener("keydown", (e) => {
     ctx.fillText("hf", 0, 0);
     ctx.restore();
 
-    // electrons
     electrons.forEach((e) => {
       let y;
       if (e.dropProgress !== null) {
@@ -250,39 +283,30 @@ nameInput.addEventListener("keydown", (e) => {
 
   function loop(timestamp) {
     if (lastTime !== null) {
-      elapsed += (timestamp - lastTime) / 1000; // convert ms to seconds
+      elapsed += (timestamp - lastTime) / 1000; // ms -> seconds
     }
     lastTime = timestamp;
 
     electrons.forEach((e) => (e.bob += 0.06));
     if (running) step();
     draw();
-    scoreNum.textContent = (BW * nExcited - BW * (TOTAL - nExcited)).toFixed(0);
+
     animId = requestAnimationFrame(loop);
   }
+  let animId = null;
 
   n2Slider.addEventListener("input", () => {
-    if (!running) makeElectrons(n2Slider.value); // instant response, only pre-submit
+    if (!running) makeElectrons(n2Slider.value); // instant preview, pre-submit only
   });
 
-  document.getElementById("submitBtn").onclick = () => {
-    ws.send(
-      JSON.stringify({
-        type: "submit",
-        values: {
-          n2: n2Slider.value,
-          a: aInput.value,
-          bw: bwInput.value,
-        },
-      }),
-    );
-
+  submitBtn.onclick = () => {
     A = parseFloat(aInput.value);
     BW = parseFloat(bwInput.value);
     N0 = parseFloat(n2Slider.value);
     C = A + BW;
     SS = Math.floor((TOTAL * BW) / (BW + C));
     K = (TOTAL * BW) / (BW + C) - N0;
+
     running = true;
     elapsed = 0;
     lastTime = null;
@@ -290,5 +314,6 @@ nameInput.addEventListener("keydown", (e) => {
     makeElectrons(n2Slider.value);
   };
 
+  makeElectrons(n2Slider.value);
   loop();
 })();

@@ -35,30 +35,8 @@ class Game:
     def remove_player(self, name: str) -> None:
         self.players.pop(name, None)
 
-    def update_score(self, name: str, values: dict) -> None:
-        N = 1e2
-        # p = float(values["n2"])
-        a = float(values["a"])
-        bw = float(values["bw"])
-        
-        # def nt(t):
-        # analytic function for the population vector over time
-        #     c = N * (bw / (a + 2 * bw) - p)
-        #     V = np.array([1, -1])
-        #     exp = np.exp(- (a + 2 * bw)*t)
-        #     return c * V * exp
-        
-        denom = a + 2 * bw
-        if denom == 0:
-            gain = 0
-        else:
-            n1_final = N * (a + bw) / denom
-            n2_final = N * bw / denom
-
-            print(n1_final, n2_final)
-            gain = bw * n2_final - bw * n1_final 
-
-        self.players[name]["score"] = f"{gain:.1f}"
+    def update_score(self, name: str, gain: int) -> None:
+        self.players[name]["score"] = str(gain)
         
     def scoreboard(self) -> list[dict]:
         """Returns players ranked highest score first."""
