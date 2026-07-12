@@ -130,21 +130,34 @@ nameInput.addEventListener("keydown", (e) => {
   }
 
   function step() {
-    const exp = Math.exp(-(BW + C) * elapsed);
-    const roundedTerm = Math.round(K * exp); // compute this once
-
-    const diff = N0 - (SS + roundedTerm); // diff uses it
+    const rate = BW + C;
+    // const rate = 0.1;
+    console.log("elapsed:", elapsed);
+    const exp = Math.exp(-rate * elapsed);
+    console.log("exp:", exp);
+    console.log("k:", K);
+    const roundedTerm = Math.round(-K * exp);
+    console.log("rounded term:", roundedTerm);
+    const nDecaying = N0 - (SS + roundedTerm);
 
     electrons.forEach((e) => {
-      if (e.id <= diff && e.level === 2 && e.dropProgress === null) {
+      if (e.id <= nDecaying && e.level === 2 && e.dropProgress === null) {
         e.dropProgress = 0;
       }
     });
 
-    console.log("SS: ", SS);
-    console.log("diff: ", diff);
-    console.log(roundedTerm);
-    if (roundedTerm === 0) running = false;
+    electrons.forEach((e) => {
+      if (e.dropProgress !== null) {
+        e.dropProgress += 0.06;
+        if (e.dropProgress > 1.0) {
+          e.level = 1;
+          e.dropProgress = null;
+        }
+      }
+    });
+
+    const nExcited = electrons.filter((e) => e.level === 2).length;
+    if (nExcited <= SS) running = false;
   }
 
   function advanceFalls() {
@@ -153,7 +166,7 @@ nameInput.addEventListener("keydown", (e) => {
         e.dropProgress += 0.06;
         if (e.dropProgress > 1.0) {
           e.level = 1;
-          e.dropProgress = null; // done falling — also fixes the earlier bug where this never got reset
+          e.dropProgress = null;
         }
       }
     });
@@ -237,7 +250,7 @@ nameInput.addEventListener("keydown", (e) => {
     electrons.forEach((e) => (e.bob += 0.06));
     if (running) step();
     draw();
-    advanceFalls();
+    // advanceFalls();
     animId = requestAnimationFrame(loop);
   }
 
@@ -262,7 +275,7 @@ nameInput.addEventListener("keydown", (e) => {
     N0 = parseFloat(n2Slider.value);
     C = A + BW;
     SS = Math.floor((TOTAL * BW) / (BW + C));
-    K = N0 - (N0 * C) / (BW + C);
+    K = (TOTAL * BW) / (BW + C) - N0;
     running = true;
     elapsed = 0;
     lastTime = null;
