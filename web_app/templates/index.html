@@ -45,10 +45,13 @@
         <section class="panel" id="dialPanel">
           <h2>Your Dial</h2>
 
+          <div id="canvasWrap">
+            <canvas id="scene" width="470" height="115"></canvas>
+          </div>
+
           <div class="readout">
-            <output class="score-num mono" id="scoreNum">0</output>
+            <output class="score-num mono" id="scoreNum">0.0</output>
             <span class="score-label">gain</span>
-            <div class="temp-tag" id="tempTag">🥶 ICY</div>
           </div>
 
           <!-- INPUTS -->
@@ -84,7 +87,7 @@
             </div>
 
             <button type="button" class="btn-primary" id="submitBtn">
-              Submit
+              Play!
             </button>
           </form>
         </section>

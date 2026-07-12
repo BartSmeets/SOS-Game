@@ -117,6 +117,12 @@ button:active {
 }
 
 /* ---------- Game screen ---------- */
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
 .stage {
   display: none;
   width: 100%;

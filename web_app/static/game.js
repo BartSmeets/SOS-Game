@@ -7,7 +7,8 @@ const nameInput = document.getElementById("nameInput");
 
 const stage = document.getElementById("stage");
 const scoreNum = document.getElementById("scoreNum");
-const tempTag = document.getElementById("tempTag");
+console.log("init ran, scoreNum now:", JSON.stringify(scoreNum.textContent));
+console.log("scoreNum set to:", scoreNum.textContent);
 const whoLine = document.getElementById("whoLine");
 
 const dialPanel = document.getElementById("dialPanel");
@@ -45,13 +46,6 @@ function connect(name, spectator) {
   };
 }
 
-function tempFor(score) {
-  if (score >= 90) return ["🏆 BULLSEYE", "var(--hot)"];
-  if (score >= 65) return ["🔥 ON FIRE", "var(--hot)"];
-  if (score >= 35) return ["😎 WARM", "#d6a14e"];
-  return ["🥶 ICY", "var(--cold)"];
-}
-
 function renderBoard(rows) {
   if (!rows.length) {
     board.innerHTML = '<div class="empty-state">Waiting for players…</div>';
@@ -74,11 +68,9 @@ function renderBoard(rows) {
   if (!isSpectator) {
     const mine = rows.find((r) => r.name === myName);
     if (mine) {
-      scoreNum.textContent = mine.score;
-      const [label, color] = tempFor(mine.score);
-      tempTag.textContent = label;
-      scoreNum.style.color = color;
-      tempTag.style.color = color;
+      if (mine.score != null) {
+        scoreNum.textContent = mine.score;
+      }
     }
   }
 }
@@ -97,15 +89,186 @@ nameInput.addEventListener("keydown", (e) => {
   }
 });
 
-document.getElementById("submitBtn").onclick = () => {
-  ws.send(
-    JSON.stringify({
-      type: "submit",
-      values: {
-        n2: n2Slider.value,
-        a: aInput.value,
-        bw: bwInput.value,
-      },
-    }),
-  );
-};
+(function () {
+  const canvas = document.getElementById("scene");
+  const ctx = canvas.getContext("2d");
+  const W = canvas.width,
+    H = canvas.height;
+
+  const TOTAL = 100;
+  const Y_E2 = H * 0.1; // upper level y
+  const Y_E1 = H * 0.9; // lower level y
+  const LEVEL_X0 = 90,
+    LEVEL_X1 = W - 90;
+
+  let A, BW, N0, C, SS, K;
+
+  let animId = null;
+  let running = false;
+  let lastTime = null;
+  let elapsed = 0;
+  let electrons = [];
+  makeElectrons(n2Slider.value);
+
+  function makeElectrons(nExcited) {
+    electrons = [];
+    for (let i = 0; i < TOTAL; i++) {
+      const excited = i < nExcited;
+      electrons.push({
+        id: i,
+        level: excited ? 2 : 1,
+        x: LEVEL_X0 + Math.random() * (LEVEL_X1 - LEVEL_X0),
+        yJitter: (Math.random() - 0.5) * 10,
+        bob: Math.random() * Math.PI * 2,
+        dropProgress: null, // set when transitioning
+      });
+    }
+  }
+
+  function easeInOut(x) {
+    return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
+  }
+
+  function step() {
+    const exp = Math.exp(-(BW + C) * elapsed);
+    const roundedTerm = Math.round(K * exp); // compute this once
+
+    const diff = N0 - (SS + roundedTerm); // diff uses it
+
+    electrons.forEach((e) => {
+      if (e.id <= diff && e.level === 2 && e.dropProgress === null) {
+        e.dropProgress = 0;
+      }
+    });
+
+    console.log("SS: ", SS);
+    console.log("diff: ", diff);
+    console.log(roundedTerm);
+    if (roundedTerm === 0) running = false;
+  }
+
+  function advanceFalls() {
+    electrons.forEach((e) => {
+      if (e.dropProgress !== null) {
+        e.dropProgress += 0.06;
+        if (e.dropProgress > 1.0) {
+          e.level = 1;
+          e.dropProgress = null; // done falling — also fixes the earlier bug where this never got reset
+        }
+      }
+    });
+  }
+
+  function getCss(varName) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+  }
+
+  function levelY(level, jitter) {
+    return (level === 2 ? Y_E2 : Y_E1) + jitter;
+  }
+
+  function drawLevel(y, color, label) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(LEVEL_X0, y);
+    ctx.lineTo(LEVEL_X1, y);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = "14px Georgia, serif";
+    ctx.textAlign = "right";
+    ctx.fillText(label, LEVEL_X0 - 12, y + 4);
+  }
+
+  function drawElectron(x, y) {
+    const grad = ctx.createRadialGradient(x, y, 0, x, y, 7);
+    grad.addColorStop(0, "#ffffff");
+    grad.addColorStop(1, getCss("--text-bright"));
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x, y, 3.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawLevel(Y_E2, getCss("--hot"), "|2⟩");
+    drawLevel(Y_E1, getCss("--cold"), "|1⟩");
+
+    // energy gap arrow
+    ctx.strokeStyle = getCss("--text-muted");
+    ctx.setLineDash([3, 4]);
+    ctx.beginPath();
+    ctx.moveTo(LEVEL_X1 + 30, Y_E2);
+    ctx.lineTo(LEVEL_X1 + 30, Y_E1);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = getCss("--text-muted");
+    ctx.font = "14px Georgia, serif";
+    ctx.save();
+    ctx.translate(LEVEL_X1 + 46, (Y_E2 + Y_E1) / 2);
+    ctx.rotate(Math.PI / 2);
+    ctx.textAlign = "center";
+    ctx.fillText("hf", 0, 0);
+    ctx.restore();
+
+    // electrons
+    electrons.forEach((e) => {
+      let y;
+      if (e.dropProgress !== null) {
+        const y2 = levelY(2, e.yJitter);
+        const y1 = levelY(1, e.yJitter);
+        y = y2 + (y1 - y2) * easeInOut(e.dropProgress);
+      } else {
+        y = levelY(e.level, e.yJitter) + Math.sin(e.bob) * 1.5;
+      }
+      drawElectron(e.x, y);
+    });
+  }
+
+  function loop(timestamp) {
+    if (lastTime !== null) {
+      elapsed += (timestamp - lastTime) / 1000; // convert ms to seconds
+    }
+    lastTime = timestamp;
+
+    electrons.forEach((e) => (e.bob += 0.06));
+    if (running) step();
+    draw();
+    advanceFalls();
+    animId = requestAnimationFrame(loop);
+  }
+
+  n2Slider.addEventListener("input", () => {
+    if (!running) makeElectrons(n2Slider.value); // instant response, only pre-submit
+  });
+
+  document.getElementById("submitBtn").onclick = () => {
+    ws.send(
+      JSON.stringify({
+        type: "submit",
+        values: {
+          n2: n2Slider.value,
+          a: aInput.value,
+          bw: bwInput.value,
+        },
+      }),
+    );
+
+    A = parseFloat(aInput.value);
+    BW = parseFloat(bwInput.value);
+    N0 = parseFloat(n2Slider.value);
+    C = A + BW;
+    SS = Math.floor((TOTAL * BW) / (BW + C));
+    K = N0 - (N0 * C) / (BW + C);
+    running = true;
+    elapsed = 0;
+    lastTime = null;
+
+    makeElectrons(n2Slider.value);
+  };
+
+  loop();
+})();
