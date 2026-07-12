@@ -36,7 +36,7 @@ class Game:
         self.players.pop(name, None)
 
     def update_score(self, name: str, values: dict) -> None:
-        N = 1e3
+        N = 1e2
         # p = float(values["n2"])
         a = float(values["a"])
         bw = float(values["bw"])
@@ -54,6 +54,8 @@ class Game:
         else:
             n1_final = N * (a + bw) / denom
             n2_final = N * bw / denom
+
+            print(n1_final, n2_final)
             gain = bw * n2_final - bw * n1_final 
 
         self.players[name]["score"] = f"{gain:.1f}"

@@ -101,7 +101,12 @@ nameInput.addEventListener("keydown", (e) => {
   const LEVEL_X0 = 90,
     LEVEL_X1 = W - 90;
 
-  let A, BW, N0, C, SS, K;
+  let A,
+    BW = 0.0,
+    N0,
+    C,
+    SS,
+    K;
 
   let animId = null;
   let running = false;
@@ -109,6 +114,8 @@ nameInput.addEventListener("keydown", (e) => {
   let elapsed = 0;
   let electrons = [];
   makeElectrons(n2Slider.value);
+
+  let nExcited = electrons.filter((e) => e.level === 2).length;
 
   function makeElectrons(nExcited) {
     electrons = [];
@@ -156,7 +163,7 @@ nameInput.addEventListener("keydown", (e) => {
       }
     });
 
-    const nExcited = electrons.filter((e) => e.level === 2).length;
+    nExcited = electrons.filter((e) => e.level === 2).length;
     if (nExcited <= SS) running = false;
   }
 
@@ -250,7 +257,7 @@ nameInput.addEventListener("keydown", (e) => {
     electrons.forEach((e) => (e.bob += 0.06));
     if (running) step();
     draw();
-    // advanceFalls();
+    scoreNum.textContent = (BW * nExcited - BW * (TOTAL - nExcited)).toFixed(0);
     animId = requestAnimationFrame(loop);
   }
 
