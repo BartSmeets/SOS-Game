@@ -1,3 +1,11 @@
+/* =========================================================================
+   Shared theme — colors, fonts, and common components (buttons, inputs,
+   join card, leaderboard rows). Every game's own style.css does:
+       @import url("/static/theme.css");
+   and then only adds styles for whatever is unique to that game.
+   Change colors/fonts here once and every game updates together.
+   ========================================================================= */
+
 :root {
   --bg-deep: #161a2e;
   --bg-panel: #1f2444;
@@ -17,10 +25,6 @@ body {
   background: radial-gradient(circle at 20% 0%, #1c2147 0%, var(--bg-deep) 55%);
   color: var(--text-bright);
   font-family: "Inter", sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
 }
 h1,
 h2,
@@ -59,6 +63,16 @@ h2,
   color: var(--text-muted);
   font-size: 14px;
   margin: 0 0 24px;
+}
+.back-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+.back-link:hover {
+  color: var(--cold);
 }
 
 input[type="text"] {
@@ -116,12 +130,12 @@ button:active {
   border-color: var(--cold);
 }
 
-/* ---------- Game screen ---------- */
-canvas {
-  display: block;
-  width: 100%;
-  height: auto;
-  border-radius: 4px;
+/* ---------- Game screen shell ---------- */
+.page-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 .stage {
   display: none;
@@ -176,7 +190,7 @@ canvas {
   margin: 0 0 18px;
 }
 
-/* dial panel */
+/* readout used by most games for "your current score" */
 .readout {
   text-align: center;
   margin-bottom: 22px;
@@ -203,19 +217,6 @@ canvas {
   font-size: 13px;
   color: var(--text-muted);
   letter-spacing: 0.06em;
-}
-.temp-tag {
-  display: inline-block;
-  margin-top: 10px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  font-family: "Nunito Sans", sans-serif;
-  background: var(--bg-panel-2);
-  transition:
-    background 0.25s ease,
-    color 0.25s ease;
 }
 
 .settings {
@@ -272,7 +273,7 @@ input[type="number"] {
   margin-bottom: 14px;
 }
 
-/* leaderboard */
+/* ---------- leaderboard (shared by every game) ---------- */
 .row {
   display: grid;
   grid-template-columns: 28px 1fr auto;

@@ -9,8 +9,6 @@ touching any networking code.
 
 import random
 
-import numpy as np
-
 SLIDER_MIN, SLIDER_MAX = 0, 100  # CUSTOMISE ME: slider range
 
 
@@ -41,7 +39,6 @@ class Game:
     def scoreboard(self) -> list[dict]:
         """Returns players ranked highest score first."""
         ranked = sorted(self.players.items(), key=lambda kv: float(kv[1]["score"]), reverse=True)
-        print(ranked)
         return [{"name": n, "score": p["score"]} for n, p in ranked]
 
 

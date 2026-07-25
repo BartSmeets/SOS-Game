@@ -1,0 +1,70 @@
+@import url("/static/theme.css");
+
+.home-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 64px 24px;
+}
+.home-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.home-header .eyebrow {
+  display: block;
+  color: var(--cold);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.home-header h1 {
+  font-size: 32px;
+  margin: 0 0 8px;
+}
+.home-header p {
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.game-card {
+  display: block;
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px 24px;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease;
+}
+.game-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--cold);
+}
+.game-card h2 {
+  font-size: 19px;
+  margin: 0 0 8px;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--text-bright);
+}
+.game-card p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+.game-card .play-hint {
+  display: inline-block;
+  margin-top: 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hot);
+}

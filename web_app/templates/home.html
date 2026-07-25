@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Summer of Science: EXPTECH</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/home.css" />
+  </head>
+  <body>
+    <div class="home-wrap">
+      <div class="home-header">
+        <span class="eyebrow">Summer of Science · EXPTECH</span>
+        <h1>Pick a game</h1>
+        <p>Join &amp; play, or watch on the projector.</p>
+      </div>
+
+      <div class="game-grid">
+        {% for game in games %}
+        <a class="game-card" href="/games/{{ game.slug }}">
+          <h2>{{ game.title }}</h2>
+          <p>{{ game.description }}</p>
+          <span class="play-hint">Play →</span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>
