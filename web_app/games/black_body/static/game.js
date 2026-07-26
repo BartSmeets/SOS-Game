@@ -1,3 +1,5 @@
+import { waveLengthToRGB } from "/static/colors.js";
+
 let ws;
 let myName = null;
 let isSpectator = false;
@@ -40,6 +42,7 @@ function connect(name, spectator) {
       renderBoard(msg.board);
       scoreNum.textContent = msg.score;
       waveRead.textContent = msg.wavelength;
+      draw();
     }
   };
 }
@@ -94,8 +97,6 @@ function renderBoard(rows) {
   }
 }
 
-function updateReadings() {}
-
 tempSpinBox.onchange = function () {
   ws.send(
     JSON.stringify({
@@ -104,3 +105,125 @@ tempSpinBox.onchange = function () {
     }),
   );
 };
+
+// Drawing
+const WIEN = 2898000; // nm * K
+const TARGET_T = 5800; // must match TARGET in game.py
+
+const FRAUNHOFER_LINES = [
+  { wl: 393.4, depth: 0.55, width: 3 },
+  { wl: 396.8, depth: 0.5, width: 3 },
+  { wl: 434.0, depth: 0.35, width: 2.5 },
+  { wl: 486.1, depth: 0.4, width: 3 },
+  { wl: 517.3, depth: 0.35, width: 2 },
+  { wl: 589.0, depth: 0.45, width: 1.8 },
+  { wl: 656.3, depth: 0.55, width: 3 },
+  { wl: 686.7, depth: 0.15, width: 1.5 },
+  { wl: 759.4, depth: 0.15, width: 1.5 },
+];
+
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
+function planck(wavelengthNm, temperature) {
+  const wl = wavelengthNm * 1e-9;
+  const h = 6.626e-34,
+    c = 3e8,
+    k = 1.38e-23;
+  const term1 = (2 * h * c * c) / Math.pow(wl, 5);
+  const term2 = 1 / (Math.exp((h * c) / (wl * k * temperature)) - 1);
+  return term1 * term2;
+}
+
+function absorptionFactor(wavelengthNm) {
+  let factor = 1;
+  for (const line of FRAUNHOFER_LINES) {
+    const d = (wavelengthNm - line.wl) / line.width;
+    factor *= 1 - line.depth * Math.exp(-(d * d));
+  }
+  return factor;
+}
+
+function linspace(a, b, n) {
+  const arr = [];
+  const step = (b - a) / (n - 1);
+  for (let i = 0; i < n; i++) arr.push(a + i * step);
+  return arr;
+}
+
+function getCss(varName) {
+  return getComputedStyle(document.documentElement)
+    .getPropertyValue(varName)
+    .trim();
+}
+
+function draw() {
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width === 0 || rect.height === 0) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  const W = rect.width;
+  const H = rect.height;
+  const pad = 34;
+  const xMin = 300,
+    xMax = 1000;
+  const T = parseFloat(tempSpinBox.value);
+
+  const xs = linspace(xMin, xMax, 1000);
+  const targetYs = xs.map((x) => planck(x, TARGET_T) * absorptionFactor(x));
+  const guessYs = xs.map((x) => planck(x, T));
+  const trueMax = Math.max(...xs.map((x) => planck(x, TARGET_T)), ...guessYs);
+
+  function toPixel(x, y) {
+    const px = pad + ((x - xMin) / (xMax - xMin)) * (W - pad - 10);
+    const py = H - pad - (y / trueMax) * (H - pad - 14);
+    return [px, py];
+  }
+
+  ctx.clearRect(0, 0, W, H);
+
+  // visible-spectrum background band
+  for (let wl = 380; wl < 780; wl += 4) {
+    const [r, g, b] = waveLengthToRGB(wl);
+    const [px] = toPixel(wl, 0);
+    const [px2] = toPixel(wl + 4, 0);
+    ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.12)`;
+    ctx.fillRect(px, pad - 6, px2 - px + 1, H - pad - (pad - 6));
+  }
+
+  // observed solar spectrum (with Fraunhofer dips)
+  ctx.strokeStyle = "rgba(144, 153, 196, 0.8)";
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  xs.forEach((x, i) => {
+    const [px, py] = toPixel(x, targetYs[i]);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+  ctx.stroke();
+
+  // player's guessed Planck curve, colored by its own peak wavelength
+  ctx.strokeStyle = getCss("--cold");
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  xs.forEach((x, i) => {
+    const [px, py] = toPixel(x, guessYs[i]);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+  ctx.stroke();
+
+  // x-axis tick labels
+  ctx.fillStyle = "#9099c4";
+  ctx.font = "11px sans-serif";
+  ctx.textAlign = "center";
+  [400, 500, 600, 700, 800, 900].forEach((w) => {
+    const [px] = toPixel(w, 0);
+    ctx.fillText(w, px, H - 8);
+  });
+}
+
+draw();

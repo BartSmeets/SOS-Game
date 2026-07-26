@@ -1,4 +1,4 @@
-import { waveLengthToRGB } from "./colors.js";
+import { waveLengthToRGB } from "/static/colors.js";
 
 const hc = 1240; // eV*nm
 
