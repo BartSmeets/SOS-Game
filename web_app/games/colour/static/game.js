@@ -29,8 +29,15 @@ energySlider.oninput = function () {
 function draw() {
   const canvas = document.getElementById("scene");
   const ctx = canvas.getContext("2d");
-  const W = canvas.width;
-  const H = canvas.height;
+  const rect = canvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+
+  canvas.width = rect.width * dpr; // <-- actually SET the buffer size
+  canvas.height = rect.height * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); // <-- scale drawing commands to match
+
+  const W = rect.width;
+  const H = rect.height;
 
   const pad = 30;
   const xMin = -3000,
@@ -65,7 +72,7 @@ function draw() {
   // Colour
   const [r, g, b] = waveLengthToRGB(wavelength);
   ctx.strokeStyle = `rgb(${r}, ${g}, ${b})`;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 5;
 
   // Draw
   ctx.clearRect(0, 0, W, H);
