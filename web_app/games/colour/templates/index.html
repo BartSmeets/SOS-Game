@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Summer of Science: EXPTECH - Colour Converter</title>
+    <link rel="icon" type="image/jpeg" href="/static/favicon.jpeg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/games/colour/static/style.css" />
+  </head>
+
+  <body class="page-center">
+    <div class="stage active">
+      <a class="back-link" href="/">← All games</a>
+      <div class="topbar">
+        <span class="title">Colour Converter</span>
+      </div>
+
+      <div class="grid">
+        <section class="panel" id="dialPanel">
+          <div id="canvasWrap">
+            <canvas id="scene" width="470" height="200"></canvas>
+          </div>
+
+          <div class="readout">
+            <div class="readout-item">
+              <output class="score-num mono" id="wave-read">380</output>
+              <span class="score-label">WAVELENGTH (nm)</span>
+            </div>
+            <div class="readout-item">
+              <output class="score-num mono" id="energy-read">3.26</output>
+              <span class="score-label">ENERGY (eV)</span>
+            </div>
+          </div>
+
+          <!-- INPUTS -->
+          <form class="settings">
+            <div class="setting">
+              <label for="wave-slider" class="observable-label">
+                <strong>Wavelength</strong> (nm)
+              </label>
+              <input
+                type="range"
+                id="wave-slider"
+                name="wavelength"
+                min="380"
+                max="780"
+                value="380"
+                step="1"
+              />
+              <div class="slider-ends"><span>380</span><span>780</span></div>
+            </div>
+
+            <div class="setting">
+              <label for="energy-slider" class="observable-label">
+                <strong>Energy</strong> (eV)
+              </label>
+              <input
+                type="range"
+                id="energy-slider"
+                name="energy"
+                min="1.59"
+                max="3.26"
+                value="3.26"
+                step="0.01"
+              />
+              <div class="slider-ends"><span>1.59</span><span>3.26</span></div>
+            </div>
+          </form>
+        </section>
+      </div>
+    </div>
+
+    <script type="module" src="/games/colour/static/game.js"></script>
+  </body>
+</html>

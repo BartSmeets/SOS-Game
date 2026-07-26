@@ -25,12 +25,12 @@ def scoreboard_payload() -> dict:
     return {"type": "scoreboard", "board": game.scoreboard()}
 
 
-@router.get("/")
+@router.get("/games/einstein")
 async def index(request: Request):
     return templates.TemplateResponse(request, "index.html")
 
 
-@router.websocket("/ws")
+@router.websocket("/games/einstein/ws")
 async def ws_endpoint(websocket: WebSocket):
     await websocket.accept()
     name = None

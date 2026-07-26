@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
+from .colour.router import router as colour_router
 from .einstein.router import router as einstein_router
 
 
@@ -16,6 +17,13 @@ class GameEntry:
 
 
 GAMES: list[GameEntry] = [
+    GameEntry(
+        slug="colour",
+        title="Colour Converter",
+        description="Play with the representation of the light quantum.",
+        router=colour_router,
+        static_dir=Path(__file__).resolve().parent / "colour" / "static",
+    ),
     GameEntry(
         slug="einstein",
         title="Einstein Coefficients",

@@ -35,7 +35,7 @@ const board = document.getElementById("board");
 // -------------------------------------------------------------------------
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  ws = new WebSocket(proto + "://" + location.host + "/ws");
+  ws = new WebSocket(proto + "://" + location.host + "/games/einstein/ws");
 
   ws.onopen = () => {
     ws.send(JSON.stringify({ type: "join", name, spectator }));
