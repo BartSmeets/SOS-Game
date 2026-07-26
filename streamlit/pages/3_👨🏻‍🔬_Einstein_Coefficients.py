@@ -4,7 +4,7 @@ from scipy.integrate import solve_ivp
 from matplotlib import animation
 import matplotlib.pyplot as plt
 import streamlit.components.v1 as components
-from modules.einstein_coefficients import to_html, solve_model, figure
+from streamlit.modules.einstein_coefficients import to_html, solve_model, figure
 
 st.set_page_config(
         page_title="Summer of Science",

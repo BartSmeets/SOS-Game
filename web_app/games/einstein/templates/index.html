@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Summer of Science: EXPTECH - Einstein Coefficients</title>
+    <link rel="icon" type="image/jpeg" href="/static/favicon.jpeg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/games/einstein/static/style.css" />
+  </head>
+
+  <body class="page-center">
+    <!-- JOIN SCREEN -->
+    <div class="join-card" id="joinCard">
+      <a class="back-link" href="/">← All games</a>
+      <span class="eyebrow">Summer of Science · EXPTECH</span>
+      <h1>Einstein Coefficients</h1>
+
+      <p class="sub">
+        Discover how the A &amp B coefficients affect the laser gain — Can you
+        make a stable gain?
+      </p>
+      <input
+        type="text"
+        id="nameInput"
+        placeholder="Your name"
+        maxlength="18"
+      />
+      <button class="btn-primary" id="joinBtn">Join &amp; Play</button>
+      <button class="btn-ghost" id="watchBtn">Just watching</button>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="stage" id="stage">
+      <a class="back-link" href="/">← All games</a>
+      <div class="topbar">
+        <span class="title">Einstein Coefficients</span>
+        <div class="who" id="whoLine"></div>
+      </div>
+
+      <div class="grid">
+        <!-- DIAL PANEL -->
+        <section class="panel" id="dialPanel">
+          <h2>Your Dial</h2>
+
+          <div id="canvasWrap">
+            <canvas id="scene" width="470" height="115"></canvas>
+          </div>
+
+          <div class="readout">
+            <output class="score-num mono" id="scoreNum">0.0</output>
+            <span class="score-label">gain</span>
+          </div>
+
+          <!-- INPUTS -->
+          <form class="settings">
+            <div class="setting">
+              <label for="n2-slider" class="observable-label">
+                <strong>N<sub>2</sub></strong
+                >: percentage of carriers in the highest energy level
+              </label>
+              <input
+                type="range"
+                id="n2-slider"
+                name="n2"
+                min="0"
+                max="100"
+                value="50"
+              />
+              <div class="slider-ends"><span>0%</span><span>100%</span></div>
+            </div>
+
+            <div class="setting">
+              <label for="a-input" class="observable-label">
+                <strong>A</strong>: Spontaneous emission rate
+              </label>
+              <input
+                type="range"
+                id="a-input"
+                name="a"
+                min="0"
+                max="1"
+                step="0.01"
+                value="0.5"
+              />
+            </div>
+
+            <div class="setting">
+              <label for="bw-input" class="observable-label">
+                <strong>BW</strong>: Stimulated emission/Pump rate
+              </label>
+              <input
+                type="range"
+                id="bw-input"
+                name="bw"
+                min="0.0"
+                max="1.0"
+                step="0.01"
+                value="0.5"
+              />
+            </div>
+
+            <button type="button" class="btn-primary" id="submitBtn">
+              Play!
+            </button>
+          </form>
+        </section>
+
+        <!-- LEADERBOARD -->
+        <section class="panel">
+          <h2>Live Leaderboard</h2>
+
+          <div id="board">
+            <div class="empty-state">Waiting for players…</div>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <script src="/games/einstein/static/game.js"></script>
+  </body>
+</html>

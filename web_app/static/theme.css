@@ -1,0 +1,330 @@
+/* =========================================================================
+   Shared theme — colors, fonts, and common components (buttons, inputs,
+   join card, leaderboard rows). Every game's own style.css does:
+       @import url("/static/theme.css");
+   and then only adds styles for whatever is unique to that game.
+   Change colors/fonts here once and every game updates together.
+   ========================================================================= */
+
+:root {
+  --bg-deep: #161a2e;
+  --bg-panel: #1f2444;
+  --bg-panel-2: #262c53;
+  --hot: #ff6b4a;
+  --cold: #4ed7d0;
+  --text-bright: #f1eefb;
+  --text-muted: #9099c4;
+  --line: rgba(255, 255, 255, 0.08);
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 0%, #1c2147 0%, var(--bg-deep) 55%);
+  color: var(--text-bright);
+  font-family: "Inter", sans-serif;
+}
+h1,
+h2,
+.display {
+  font-family: "Nunito Sans", sans-serif;
+}
+.mono {
+  font-family: "Nunito Sans", monospace;
+}
+
+/* ---------- Join screen ---------- */
+.join-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+.join-card .eyebrow {
+  display: block;
+  color: var(--cold);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.join-card h1 {
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+.join-card p.sub {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin: 0 0 24px;
+}
+.back-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: var(--text-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+.back-link:hover {
+  color: var(--cold);
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel-2);
+  color: var(--text-bright);
+  font-size: 15px;
+  font-family: inherit;
+  margin-bottom: 14px;
+}
+input[type="text"]:focus {
+  outline: 2px solid var(--cold);
+  outline-offset: 1px;
+}
+
+button {
+  font-family: "Nunito Sans", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease;
+}
+button:focus-visible {
+  outline: 2px solid var(--cold);
+  outline-offset: 2px;
+}
+button:active {
+  transform: scale(0.97);
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--hot), #ff8d6f);
+  color: #1a1410;
+  width: 100%;
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--line);
+  margin-top: 10px;
+  width: 100%;
+}
+.btn-ghost:hover {
+  color: var(--text-bright);
+  border-color: var(--cold);
+}
+
+/* ---------- Game screen shell ---------- */
+.page-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.stage {
+  display: none;
+  width: 100%;
+  max-width: 1000px;
+}
+.stage.active {
+  display: block;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.topbar .title {
+  font-size: 20px;
+  font-family: "Nunito Sans";
+}
+.topbar .who {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.who b {
+  color: var(--text-bright);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 20px;
+}
+@media (max-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+}
+.panel h2 {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 18px;
+}
+
+/* readout used by most games for "your current score" */
+.readout {
+  text-align: center;
+  margin-bottom: 22px;
+}
+.score-num {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  transition:
+    color 0.25s ease,
+    text-shadow 0.25s ease;
+}
+.score-label {
+  display: block;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.observable-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 13px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+.setting {
+  margin-bottom: 1rem;
+}
+input[type="range"] {
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--bg-panel-2);
+  outline: none;
+  margin: 8px 0 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--text-bright);
+  box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+input[type="range"]::-moz-range-thumb {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: var(--text-bright);
+  cursor: pointer;
+}
+.slider-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+input[type="number"] {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg-panel-2);
+  color: var(--text-bright);
+  font-size: 15px;
+  font-family: inherit;
+  margin-bottom: 14px;
+}
+
+/* ---------- leaderboard (shared by every game) ---------- */
+.row {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+.row:last-child {
+  border-bottom: none;
+}
+.rank {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+.row.me .name {
+  color: var(--hot);
+}
+.name {
+  font-weight: 600;
+  font-size: 14px;
+}
+.bar-track {
+  position: relative;
+  height: 8px;
+  background: var(--bg-panel-2);
+  border-radius: 999px;
+  margin-top: 6px;
+  overflow: hidden;
+}
+.bar-fill {
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--cold), var(--hot));
+  transition: width 0.35s ease;
+}
+.score-pill {
+  font-family: "Nunito Sans", monospace;
+  font-weight: 700;
+  font-size: 14px;
+  min-width: 46px;
+  text-align: right;
+}
+.row.rank1 .rank {
+  color: var(--hot);
+}
+.empty-state {
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 18px 0;
+}
