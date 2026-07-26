@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
+from .black_body.router import router as bb_router
 from .colour.router import router as colour_router
 from .einstein.router import router as einstein_router
 
@@ -24,6 +25,13 @@ GAMES: list[GameEntry] = [
         router=colour_router,
         static_dir=Path(__file__).resolve().parent / "colour" / "static",
     ),
+    GameEntry(
+            slug="black_body",
+            title="Black Body",
+            description="Play with Planck's radiation law. Assuming the Sun is a black body, how hot is the exterior of the Sun?",
+            router=bb_router,
+            static_dir=Path(__file__).resolve().parent / "black_body" / "static",
+        ),
     GameEntry(
         slug="einstein",
         title="Einstein Coefficients",

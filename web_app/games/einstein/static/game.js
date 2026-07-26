@@ -115,25 +115,13 @@ function renderBoard(rows) {
 // -------------------------------------------------------------------------
 // 4. Canvas animation (electron decay simulation)
 // -------------------------------------------------------------------------
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
 (function () {
-  const canvas = document.getElementById("scene");
-  const ctx = canvas.getContext("2d");
-  const W = canvas.width;
-  const H = canvas.height;
-
   const TOTAL = 100;
-  const Y_E2 = H * 0.1; // upper energy level (excited state)
-  const Y_E1 = H * 0.9; // lower energy level (ground state)
   const LEVEL_X0 = 90;
-  const LEVEL_X1 = W - 90;
 
-  // Decay-curve parameters, set on submit:
-  //   A   — spontaneous decay rate
-  //   BW  — stimulated/blackbody rate
-  //   C   = A + BW (total decay rate)
-  //   N0  — initial number of excited electrons
-  //   SS  — steady-state excited population
-  //   K   — offset constant for the exponential decay curve
   let A,
     BW = 0.0,
     N0,
@@ -141,12 +129,17 @@ function renderBoard(rows) {
     SS,
     K,
     gain;
-
   let running = false;
   let lastTime = null;
   let elapsed = 0;
   let electrons = [];
   let nExcited = 0;
+
+  let W = 0,
+    H = 0,
+    LEVEL_X1 = 0,
+    Y_E1 = 0,
+    Y_E2 = 0;
 
   function makeElectrons(nExcitedInit) {
     electrons = [];
@@ -155,10 +148,10 @@ function renderBoard(rows) {
       electrons.push({
         id: i,
         level: excited ? 2 : 1,
-        x: LEVEL_X0 + Math.random() * (LEVEL_X1 - LEVEL_X0),
+        xFrac: Math.random(), // 0–1, position along the line
         yJitter: (Math.random() - 0.5) * 10,
         bob: Math.random() * Math.PI * 2,
-        dropProgress: null, // non-null while transitioning from level 2 -> 1
+        dropProgress: null,
       });
     }
     nExcited = electrons.filter((e) => e.level === 2).length;
@@ -168,7 +161,6 @@ function renderBoard(rows) {
     return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
   }
 
-  // Advances any electrons currently mid-transition down to the ground state.
   function advanceFalls() {
     electrons.forEach((e) => {
       if (e.dropProgress !== null) {
@@ -181,9 +173,6 @@ function renderBoard(rows) {
     });
   }
 
-  // Advances the simulation: computes how many electrons should have decayed
-  // by now (following an exponential approach to steady state) and starts
-  // new transitions accordingly.
   function step() {
     const rate = BW + C;
     const decayFactor = Math.exp(-rate * elapsed);
@@ -202,12 +191,7 @@ function renderBoard(rows) {
     gain = (BW * nExcited - BW * (TOTAL - nExcited)).toFixed(0);
     scoreNum.textContent = gain;
 
-    ws.send(
-      JSON.stringify({
-        type: "submit",
-        score: gain,
-      }),
-    );
+    ws.send(JSON.stringify({ type: "submit", score: gain }));
 
     if (nExcited <= SS) running = false;
   }
@@ -247,11 +231,24 @@ function renderBoard(rows) {
   }
 
   function draw() {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return; // just skip this frame
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    W = rect.width;
+    H = rect.height;
+    Y_E2 = H * 0.1;
+    Y_E1 = H * 0.9;
+    LEVEL_X1 = W - 90;
+
     ctx.clearRect(0, 0, W, H);
     drawLevel(Y_E2, getCss("--hot"), "|2⟩");
     drawLevel(Y_E1, getCss("--cold"), "|1⟩");
 
-    // energy gap arrow
     ctx.strokeStyle = getCss("--text-muted");
     ctx.setLineDash([3, 4]);
     ctx.beginPath();
@@ -270,6 +267,7 @@ function renderBoard(rows) {
     ctx.restore();
 
     electrons.forEach((e) => {
+      const x = LEVEL_X0 + e.xFrac * (LEVEL_X1 - LEVEL_X0);
       let y;
       if (e.dropProgress !== null) {
         const y2 = levelY(2, e.yJitter);
@@ -278,13 +276,13 @@ function renderBoard(rows) {
       } else {
         y = levelY(e.level, e.yJitter) + Math.sin(e.bob) * 1.5;
       }
-      drawElectron(e.x, y);
+      drawElectron(x, y);
     });
   }
 
   function loop(timestamp) {
     if (lastTime !== null) {
-      elapsed += (timestamp - lastTime) / 1000; // ms -> seconds
+      elapsed += (timestamp - lastTime) / 1000;
     }
     lastTime = timestamp;
 
@@ -292,12 +290,11 @@ function renderBoard(rows) {
     if (running) step();
     draw();
 
-    animId = requestAnimationFrame(loop);
+    requestAnimationFrame(loop);
   }
-  let animId = null;
 
   n2Slider.addEventListener("input", () => {
-    if (!running) makeElectrons(n2Slider.value); // instant preview, pre-submit only
+    if (!running) makeElectrons(n2Slider.value);
   });
 
   submitBtn.onclick = () => {
@@ -315,6 +312,6 @@ function renderBoard(rows) {
     makeElectrons(n2Slider.value);
   };
 
-  makeElectrons(n2Slider.value);
+  makeElectrons(n2Slider.value); // uses LEVEL_X1 = 0 initially, harmless — repositioned once draw() runs
   loop();
 })();
