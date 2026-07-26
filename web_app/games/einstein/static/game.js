@@ -55,6 +55,7 @@ function connect(name, spectator) {
 
       if (isSpectator) {
         dialPanel.style.display = "none";
+        document.querySelector(".grid").classList.add("spectator-mode");
       }
     } else if (msg.type === "scoreboard") {
       renderBoard(msg.board);
