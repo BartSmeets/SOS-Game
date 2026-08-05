@@ -5,6 +5,7 @@ Game rules live in game.py. This file only handles HTTP + the websocket
 connection.
 """
 
+import asyncio
 import json
 from pathlib import Path
 
@@ -15,6 +16,7 @@ from games.connection_manager import ConnectionManager
 
 from .game import game
 
+TIMEOUT = 30
 BASE_DIR = Path(__file__).resolve().parent
 templates = Jinja2Templates(directory=BASE_DIR / "templates")
 manager = ConnectionManager()
@@ -37,9 +39,19 @@ async def ws_endpoint(websocket: WebSocket):
     is_spectator = False
     try:
         while True:
-            raw = await websocket.receive_text()
+            try:
+                raw = await asyncio.wait_for(websocket.receive_text(), timeout=TIMEOUT)
+            except asyncio.TimeoutError:
+                await websocket.close()
+                break
+
             msg = json.loads(raw)
             msg_type = msg.get("type")
+
+            # You still here?
+            if msg_type == "pong":
+                continue
+
 
             # New Connection
             if msg_type == "join":

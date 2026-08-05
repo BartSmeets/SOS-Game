@@ -14,6 +14,20 @@ const waveRead = document.getElementById("wave-read");
 const scoreNum = document.getElementById("score");
 
 // Connection
+let heartbeatTimer;
+
+function startHeartbeat() {
+  heartbeatTimer = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "pong" }));
+    }
+  }, 10000); // every 10s, well under your 30s server timeout
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatTimer);
+}
+
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(proto + "://" + location.host + "/games/black_body/ws");
@@ -26,7 +40,11 @@ function connect(name, spectator) {
     const msg = JSON.parse(event.data);
 
     if (msg.type === "joined") {
+      startHeartbeat();
       myName = msg.name;
+
+      nameInput.removeEventListener("keydown", handleEnter);
+
       whoLine.innerHTML = isSpectator
         ? "Spectator view"
         : `Playing as <b>${myName}</b>`;
@@ -45,6 +63,10 @@ function connect(name, spectator) {
       draw();
     }
   };
+
+  ws.onclose = () => {
+    stopHeartbeat();
+  };
 }
 
 document.getElementById("joinBtn").onclick = () => {
@@ -57,11 +79,13 @@ document.getElementById("watchBtn").onclick = () => {
   connect("Spectator", isSpectator);
 };
 
-nameInput.addEventListener("keydown", (e) => {
+function handleEnter(e) {
   if (e.key === "Enter") {
     document.getElementById("joinBtn").click();
   }
-});
+}
+
+nameInput.addEventListener("keydown", handleEnter);
 
 // SCORING
 const board = document.getElementById("board");
@@ -81,7 +105,7 @@ function renderBoard(rows) {
       <div>
         <div class="name">${r.name}${mine ? " (you)" : ""}</div>
         <div class="bar-track">
-          <div class="bar-fill" style="width:${Math.min(100, ((rows.length - i) / rows.length) * 100)}%"></div>
+          <div class="bar-fill" style="width:${r.score}%"></div>
         </div>
       </div>
       <div class="score-pill">${r.score}</div>
