@@ -81,7 +81,7 @@ function renderBoard(rows) {
       <div>
         <div class="name">${r.name}${mine ? " (you)" : ""}</div>
         <div class="bar-track">
-          <div class="bar-fill" style="width:${Math.min(100, ((rows.length - i) / rows.length) * 100)}%"></div>
+          <div class="bar-fill" style="width:${r.score}%"></div>
         </div>
       </div>
       <div class="score-pill">${r.score}</div>
