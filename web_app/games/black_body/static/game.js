@@ -27,6 +27,9 @@ function connect(name, spectator) {
 
     if (msg.type === "joined") {
       myName = msg.name;
+
+      nameInput.removeEventListener("keydown", handleEnter);
+
       whoLine.innerHTML = isSpectator
         ? "Spectator view"
         : `Playing as <b>${myName}</b>`;
@@ -57,11 +60,13 @@ document.getElementById("watchBtn").onclick = () => {
   connect("Spectator", isSpectator);
 };
 
-nameInput.addEventListener("keydown", (e) => {
+function handleEnter(e) {
   if (e.key === "Enter") {
     document.getElementById("joinBtn").click();
   }
-});
+}
+
+nameInput.addEventListener("keydown", handleEnter);
 
 // SCORING
 const board = document.getElementById("board");
