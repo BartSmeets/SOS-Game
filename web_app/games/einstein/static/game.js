@@ -33,6 +33,20 @@ const board = document.getElementById("board");
 // -------------------------------------------------------------------------
 // 2. WebSocket / networking
 // -------------------------------------------------------------------------
+let heartbeatTimer;
+
+function startHeartbeat() {
+  heartbeatTimer = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "pong" }));
+    }
+  }, 10000); // every 10s, well under your 30s server timeout
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatTimer);
+}
+
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(proto + "://" + location.host + "/games/einstein/ws");
@@ -45,6 +59,7 @@ function connect(name, spectator) {
     const msg = JSON.parse(event.data);
 
     if (msg.type === "joined") {
+      startHeartbeat();
       myName = msg.name;
       whoLine.innerHTML = isSpectator
         ? "Spectator view"
@@ -60,6 +75,14 @@ function connect(name, spectator) {
     } else if (msg.type === "scoreboard") {
       renderBoard(msg.board);
     }
+  };
+
+  ws.onclose = () => {
+    stopHeartbeat();
+    running = false;
+    stage.classList.remove("active");
+    joinCard.style.display = "";
+    whoLine.innerHTML = "Disconnected — please rejoin";
   };
 }
 

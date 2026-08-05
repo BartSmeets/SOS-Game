@@ -14,6 +14,20 @@ const waveRead = document.getElementById("wave-read");
 const scoreNum = document.getElementById("score");
 
 // Connection
+let heartbeatTimer;
+
+function startHeartbeat() {
+  heartbeatTimer = setInterval(() => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify({ type: "pong" }));
+    }
+  }, 10000); // every 10s, well under your 30s server timeout
+}
+
+function stopHeartbeat() {
+  clearInterval(heartbeatTimer);
+}
+
 function connect(name, spectator) {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   ws = new WebSocket(proto + "://" + location.host + "/games/black_body/ws");
@@ -26,6 +40,7 @@ function connect(name, spectator) {
     const msg = JSON.parse(event.data);
 
     if (msg.type === "joined") {
+      startHeartbeat();
       myName = msg.name;
 
       nameInput.removeEventListener("keydown", handleEnter);
@@ -47,6 +62,10 @@ function connect(name, spectator) {
       waveRead.textContent = msg.wavelength;
       draw();
     }
+  };
+
+  ws.onclose = () => {
+    stopHeartbeat();
   };
 }
 
